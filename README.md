@@ -1,37 +1,43 @@
-## Welcome to GitHub Pages
+## Object-C 中的NSProxy讲解
 
-You can use the [editor on GitHub](https://github.com/CDKing/NSProxy.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+***
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+**1)用作监听对象或给对象方法追加处理**
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
 ```
+// 生成一个监听类用的一个NSProxy类
+A.h:
+  @interface A : NSProxy
+  // 这个用于确定需要被监听的对象
+  +(id)hockObject:(id)obj;
+  @end
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+A.m:
+  @interface A ()
+  { 
+     // 这个值用于存储需要被监听的对象
+     id self_object;
+  }
+  @end
 
-### Jekyll Themes
+  @implementation A
+  // 将对象类存入自身变量中
+  +(id)hockObject:(id)obj {
+     A *a = [A alloc];
+     a -> self_object = obj;
+     return a;
+  }
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/CDKing/NSProxy.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+  -(NSMethodSignature *)methodSignatureForSelector:(SEL)sel {
+     return [self_object methodSignatureForSelector:sel];
+  }
+  // 在NSLog中对应位置，可以加入方法执行前后的需要操作的步骤，甚至可以修改参数(自行Google)
+  -(void)forwardInvocation:(NSInvocation *)invocation {
+      if ([self_object respondsToSelector:invocation.selector]) {
+          NSLog(@"方法监听中：方法执行前");
+         [invocation invokeWithTarget:self_object];
+          NSLog(@"方法监听中：方法执行后");
+      }
+  }
+  @end
+```
