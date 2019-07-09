@@ -4,8 +4,9 @@
 
 **1)用作监听对象或给对象方法追加处理**
 
+生成一个监听类用的一个NSProxy类
+
 ```
-// 生成一个监听类用的一个NSProxy类
 A.h:
   @interface A : NSProxy
   // 这个用于确定需要被监听的对象
@@ -40,4 +41,18 @@ A.m:
       }
   }
   @end
+```
+
+实际使用
+
+```
+NSMutableArray *arr = [A hockObject:[[NSMutableArray alloc]init]];
+[arr addObject:@"Hello"];
+```
+
+可变数组arr被监听，切arr的方法也被监听，上面的执行结果如下（当然，arr已经加入了@"Hello"）
+
+```
+方法监听中：方法执行前
+方法监听中：方法执行后
 ```
